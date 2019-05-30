@@ -7,9 +7,12 @@ class ProductProvider extends Component {
     state = {
         products: [],
         detailProduct: detailProduct,
-        cart: [],
+        cart: storeProducts,
         modalOpen: false,
         modalProd: detailProduct,
+        cartSubTotal: 0,
+        cartTax: 0,
+        cartTotal: 0
     };
 
     componentDidMount() {
@@ -74,15 +77,34 @@ class ProductProvider extends Component {
         })
     }
 
+    increment = (id) => {
+        console.log('this is increment method');
+    }
+
+    decrement = (id) => {
+        console.log('Decrement Method');
+    }
+
+    removeItem = (id) => {
+        console.log('item removed');
+    }
+
+    clearCart = () => {
+        console.log('cart was cleared');
+    }
+    
     render() {
         return (
             <ProductContext.Provider value={{
-                ...this.state, //adding the whole state object to the value prop
-                detailProduct: this.state.detailProduct,
+                ...this.state, //adding the whole state object to the value prop (functions have to be manually stated below)
                 handleDetail: this.handleDetail,
                 addToCart: this.addToCart,
                 openModal: this.openModal,
                 closeModal: this.closeModal,
+                increment: this.increment,
+                decrement: this.decrement,
+                removeItem: this.removeItem,
+                clearCart: this.clearCart
             }}>
                 {this.props.children}
             </ProductContext.Provider>
