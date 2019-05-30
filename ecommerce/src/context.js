@@ -2,12 +2,14 @@ import React, { Component } from 'react';
 import {storeProducts, detailProduct} from './data';
 
 const ProductContext = React.createContext();
-//Provider - will provide all info for the application
+//Provider - will provide all info/data for the application
 class ProductProvider extends Component {
     state = {
         products: [],
         detailProduct: detailProduct,
         cart: [],
+        modalOpen: false,
+        modalProd: detailProduct,
     };
 
     componentDidMount() {
@@ -21,7 +23,7 @@ class ProductProvider extends Component {
             tempProducts = [...tempProducts, singleItem];//this array will hold all of the copied values
         })
         this.setState(() =>{
-            return {products: tempProducts}
+            return {products: tempProducts}//now we've passed the items by value instead of reference to save the original data
         })
     }
 
@@ -39,7 +41,7 @@ class ProductProvider extends Component {
     }
 
     addToCart =(id) => {
-        let tempProducts = [...this.state.products];//fill array with all of the existing products
+        let tempProducts = [...this.state.products]; //fill array with all of the existing products, passing by value to avoid the original data
         const index = tempProducts.indexOf(this.getItem(id));
         const product = tempProducts[index];
         product.inCart = true;
@@ -48,19 +50,39 @@ class ProductProvider extends Component {
         product.total = price;
 
         //now change values in state
-        this.setState(() => {
+        this.setState( () => {
             return {products: tempProducts,
-                    cart: [...this.state.cart, product]}
+                    cart: [...this.state.cart, product] };
+        },
+        () => {
+            console.log(this.state);
+        }
+
+        );
+    }
+
+    openModal = (id) => {
+        const product = this.getItem(id);
+        this.setState(() => {
+            return {modalProd: product, modalOpen: true}
+        })
+    }
+
+    closeModal = () => {
+        this.setState( () => {
+            return {modalOpen: false}
         })
     }
 
     render() {
         return (
             <ProductContext.Provider value={{
-                products: this.state.products,
+                ...this.state, //adding the whole state object to the value prop
                 detailProduct: this.state.detailProduct,
                 handleDetail: this.handleDetail,
                 addToCart: this.addToCart,
+                openModal: this.openModal,
+                closeModal: this.closeModal,
             }}>
                 {this.props.children}
             </ProductContext.Provider>
