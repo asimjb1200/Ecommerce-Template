@@ -105,8 +105,16 @@ class ProductProvider extends Component {
         product.count = product.count - 1;
         if(product.count === 0){
             this.removeItem(id);
+        } else {
+            product.total = product.price * product.count;
         }
-        product.total = product.price * product.count;
+
+        this.setState(() => {
+            return {cart: [...tempCart] };
+            }, () => {//Call back
+                this.addTotals();
+            }
+        );
     }
 
     removeItem = (id) => {
