@@ -7,7 +7,7 @@ class ProductProvider extends Component {
     state = {
         products: [],
         detailProduct: detailProduct,
-        cart: storeProducts,
+        cart: [],
         modalOpen: false,
         modalProd: detailProduct,
         cartSubtotal: 0,
@@ -56,11 +56,10 @@ class ProductProvider extends Component {
         this.setState( () => {
             return {products: tempProducts,
                     cart: [...this.state.cart, product] };
-        },
-        () => {
-            console.log(this.state);
-        }
-
+            },
+            () => {// Callback function to run after set state is done
+                this.addTotals();
+            }
         );
     }
 
@@ -78,25 +77,74 @@ class ProductProvider extends Component {
     }
 
     increment = (id) => {
-        
-        console.log('this is increment method');
+        let tempCart = [...this.state.cart];
+        const selectedItem = tempCart.find(item => item.id === id)
+
+        const index = tempCart.indexOf(selectedItem);
+        const product = tempCart[index];
+
+        product.count = product.count + 1;
+        product.total = product.price * product.count;
+
+        this.setState(() => {
+            return {
+                cart: [...tempCart] 
+            }}, () => {//Call back
+                this.addTotals();
+            }
+        );
     }
 
     decrement = (id) => {
-        console.log('Decrement Method');
+        let tempCart = [...this.state.cart];
+        const selectedItem = tempCart.find(item => item.id === id)
+
+        const index = tempCart.indexOf(selectedItem);
+        const product = tempCart[index];
+
+        product.count = product.count - 1;
+        if(product.count === 0){
+            this.removeItem(id);
+        }
+        product.total = product.price * product.count;
     }
 
     removeItem = (id) => {
-        console.log('item removed');
+        let tempProducts =[...this.state.products];
+        let tempCart = [...this.state.cart];
+
+        tempCart = tempCart.filter(item => item.id !== id);//only return items that don't match the id we passed in
+        
+        //restore the product's default attributes when removing it from the cart
+        const index = tempProducts.indexOf(this.getItem(id));
+        let removedProduct = tempProducts[index];
+        removedProduct.inCart = false;
+        removedProduct.count = 0;
+        removedProduct.total = 0;
+
+        this.setState(() => {
+            return {
+                cart: [...tempCart],
+                products: [...tempProducts],
+            }
+        }, () => {
+            this.addTotals();//to make sure the totals are correct after each removal
+            }
+        );
     }
 
     clearCart = () => {
-        console.log('cart was cleared');
+        this.setState(() => {
+            return {cart: []}
+        }, () => {
+            this.setProducts();//give the program a fresh set of products with default attributes
+            this.addTotals();//make sure the cart totals are back to 0
+        });
     }
 
     addTotals = () => {
         let subTotal = 0;
-        this.state.cart.map(item => (subTotal += item.total));
+        this.state.cart.map(item => { return (subTotal += item.total) } );
         const tempTax = subTotal * 0.1;
         const tax = parseFloat(tempTax.toFixed(2));
         const total = subTotal + tax;
